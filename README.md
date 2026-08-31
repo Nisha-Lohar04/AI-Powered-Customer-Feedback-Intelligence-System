@@ -279,6 +279,68 @@ Feedback can be separated based on its category, allowing teams to manage:
         ↓
 10. A professional email is sent through Gmail
 ```
+# 📸 Project Demonstration
+## 01. Complete n8n Workflow
+
+The complete architecture of the AI-Powered Customer Feedback Intelligence System, showing the end-to-end workflow from customer feedback submission to AI analysis, intelligent routing, team notifications, data storage, and automated customer communication.
+
+![Complete n8n Workflow](Screenshots/01%20-%20Complete%20n8n%20workflow.png)
+
+---
+
+## 02. AI Feedback Analysis Output
+
+The AI Intelligence Engine analyzes unstructured customer feedback and generates structured insights such as category, sentiment, priority, topic, summary, recommended action, and confidence information.
+
+![AI Analysis Output](Screenshots/02%20-%20AI%20Analysis%20Output.png)
+
+---
+
+## 03. Airtable – Complaint Records
+
+Customer complaints and their associated AI-generated insights are stored in Airtable for structured tracking and management.
+
+![Airtable Complaint](Screenshots/03%20-%20Airtable%20-%20Complaint.png)
+
+---
+
+## 04. Airtable – Compliment Records
+
+Positive customer feedback is categorized and stored separately, allowing teams to track compliments and positive customer experiences.
+
+![Airtable Compliment](Screenshots/04%20-%20Airtable%20-%20Compliment.png)
+
+---
+
+## 05. Airtable – Feature Request Records
+
+Feature requests are automatically identified by the AI and stored separately for product and development teams.
+
+![Airtable Feature Request](Screenshots/05%20-%20Airtable%20-%20Feature%20Request.png)
+
+---
+
+## 06. Slack – Complaint Notification
+
+Relevant complaint information is automatically sent to the appropriate team through a structured Slack notification, including priority, sentiment, topic, summary, and recommended action.
+
+![Slack Complaint](Screenshots/06%20-%20Slack%20-%20Complaint.png)
+
+---
+
+## 07. Slack – Feature Request Notification
+
+Feature requests are automatically routed to the relevant team through Slack, providing structured information to support product decision-making.
+
+![Slack Feature Request](Screenshots/07%20-%20Slack%20-%20Feature%20Request.png)
+
+---
+
+## 08. AI-Generated Gmail Response
+
+The system generates a professional and personalized customer response using AI guardrails and sends it automatically through Gmail.
+
+![Gmail Response](Screenshots/08%20-%20Gmail%20Response.png)
 
 ---
 
