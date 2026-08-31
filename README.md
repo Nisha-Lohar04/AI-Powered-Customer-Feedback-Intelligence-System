@@ -393,7 +393,43 @@ The workflow separates responsibilities between the AI model and deterministic w
 This hybrid architecture ensures that AI is used where **semantic understanding and language generation** are valuable, while deterministic automation handles **predictable and controlled system behavior**.
 
 ---
+# 🚀 Setup and Installation
 
+## Prerequisites
+
+Before running this workflow, you will need:
+
+- An n8n instance
+- An LLM provider API account
+- Airtable account and configured base
+- Slack workspace
+- Gmail account for automated email communication
+
+## Setup Steps
+
+1. Clone this repository.
+
+2. Import the workflow JSON file into n8n:
+
+   `AI-Customer-Feedback-Intelligence-System.json`
+
+3. Configure your credentials in n8n for:
+
+   - LLM Provider
+   - Airtable
+   - Slack
+   - Gmail
+
+4. Update the Airtable Base and Table configurations.
+
+5. Configure the Slack channels for team notifications.
+
+6. Configure Gmail credentials for automated customer responses.
+
+7. Activate the workflow and submit customer feedback through the configured form.
+
+> **Security Note:** API keys, authentication credentials, and sensitive configuration values are not included in this repository. Users must configure their own credentials.
+---
 # 🚀 Future Improvements
 
 Potential future improvements include:
