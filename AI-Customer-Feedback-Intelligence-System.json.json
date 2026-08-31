@@ -1,0 +1,1473 @@
+{
+  "name": "FEEDBACK AUTOMATION:",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -16,
+        176
+      ],
+      "id": "dfedda8c-786f-403c-96c6-90da41ef9f57",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "formTitle": "CUSTOMER FEEDBACK FORM",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "FULL NAME",
+              "placeholder": "TYPE YOUR FULL NAME",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "EMAIL ADDRESS",
+              "fieldType": "email",
+              "placeholder": "TYPE YOUR EMAIL ADDRESS",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "CONTACT NUMBER",
+              "fieldType": "number",
+              "placeholder": "TYPE YOUR PHONE NUMBER"
+            },
+            {
+              "fieldLabel": "FEEDBACK",
+              "placeholder": "FEEL FREE TO EXPRESS YOUR THOUGHTS"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1040,
+        272
+      ],
+      "id": "e5622666-90c4-4bfa-b579-7190366cb20f",
+      "name": "Customer Feedback Submission Form",
+      "webhookId": "f12d97cc-ffa8-40b2-92c0-7d0c71a5c768"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI Customer Feedback Intelligence System.\n\nAnalyze the following customer feedback:\n\n{{ $json.FEEDBACK }}\n\nPerform the following tasks:\n\n1. Classify the feedback into exactly ONE category:\n- Complaint\n- Compliment\n- Feature Request\n\n2. Analyze the customer's sentiment and classify it as exactly ONE of:\n- Positive\n- Neutral\n- Negative\n\n3. Determine the priority level as exactly ONE of:\n- Low\n- Medium\n- High\n- Critical\n\n4. Identify the main topic of the feedback.\n\n\nCATEGORY DEFINITIONS:\n\nComplaint:\nThe customer reports a problem, bug, error, negative experience, dissatisfaction, or poor performance.\n\nCompliment:\nThe customer expresses satisfaction, appreciation, praise, or a positive experience.\n\nFeature Request:\nThe customer suggests a new feature, improvement, functionality, or enhancement.\n\n\nSENTIMENT DEFINITIONS:\n\nPositive:\nThe customer expresses happiness, satisfaction, appreciation, excitement, or praise.\n\nNeutral:\nThe feedback is factual, informational, mixed, or does not strongly express positive or negative emotions.\n\nNegative:\nThe customer expresses frustration, dissatisfaction, anger, disappointment, or a negative experience.\n\n\nPRIORITY DEFINITIONS:\n\nLow:\nMinor issue, general suggestion, compliment, or feedback that does not significantly affect product usage.\n\nMedium:\nA problem affecting a single user or limited functionality, but the product can still generally be used.\n\nHigh:\nA serious problem significantly affecting the customer's ability to use an important feature or service.\n\nCritical:\nA severe issue involving payment failures, security issues, data loss, complete system failure, account-wide access problems, or issues potentially affecting multiple users.\n\n\nTOPIC INSTRUCTIONS:\n\nIdentify the main subject of the customer's feedback.\n\nUse a short and clear topic name.\n\nExamples of topics include:\n- Payment\n- Login\n- Performance\n- Account Access\n- User Interface\n- File Upload\n- Notifications\n- Security\n- Data Loss\n- Feature Enhancement\n- General Feedback\n\n\nReturn ONLY valid JSON in exactly this format:\n\n{\n  \"category\": \"Complaint\",\n  \"sentiment\": \"Negative\",\n  \"priority\": \"Critical\",\n  \"topic\": \"Payment\"\n}\n\nReplace all values with the correct analysis.\n\nDo not provide explanations.\nDo not include markdown.\nDo not add any additional text.\n\n5. Generate a concise summary of the customer's feedback.\n\nThe summary must:\n- Be clear and professional\n- Be no longer than 30 words\n- Capture the main issue, request, or positive feedback\n\n6. Recommend an appropriate action for the relevant team.\ni want the name name to be fixed as \"action\"\nThe recommended action must:\n- Be practical and actionable\n- Be concise\n- Not invent information that is not present in the feedback\n\n7. Provide a confidence score for your overall analysis.\ni want the name to be fixed as \"confidence_score\"\nThe confidence score must be a number between 0 and 1.\n\nUse:\n- 0.90 to 1.00 for very clear feedback\n- 0.70 to 0.89 for reasonably clear feedback\n- Below 0.70 when the feedback is ambiguous or difficult to classify",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -816,
+        400
+      ],
+      "id": "84ed033f-4044-410c-b886-2c7d15ccd966",
+      "name": "AI Feedback Intelligence Engine"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = JSON.parse($json.output);\n\nreturn [\n  {\n    json: {\n      ...$json,\n      category: aiOutput.category,\n      sentiment: aiOutput.sentiment,\n      priority: aiOutput.priority,\n      topic: aiOutput.topic,\n      summary: aiOutput.summary,\n      action: aiOutput.action,\n      confidence_score: aiOutput.confidence_score\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        400
+      ],
+      "id": "8c931799-1f7b-454d-b90b-986f94d978bb",
+      "name": "Parse & Validate AI Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b171fe16-c4d3-4bce-9735-019a38eab146",
+              "leftValue": "={{ $json.confidence_score }}",
+              "rightValue": 0.8,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        400
+      ],
+      "id": "7c111471-0e7f-462c-9eed-5c18a692e0b1",
+      "name": "Confidence Threshold Check (≥ 0.85)"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BTR9XDE5C",
+          "mode": "list",
+          "cachedResultName": "low-confidence-review-alert"
+        },
+        "text": "=⚠️ AI REVIEW REQUIRED\n\n*Customer Feedback:* {{ $('Customer Feedback Submission Form').item.json.FEEDBACK }}\n\n*AI Classification:* {{ $('Parse & Validate AI Output').item.json.category }}\n\n*AI Confidence:* {{ $json.action }}\n\nPlease review this feedback manually before taking action.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        -16,
+        512
+      ],
+      "id": "ecc15364-d4eb-459d-b48e-d27b718421b2",
+      "name": "Low-Confidence Review Alert",
+      "webhookId": "75a077f3-ece4-4dd1-bbd0-660d685f1e48",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "PLG655T7maze01HY",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "Complaint",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "84f05c5b-a720-4e22-91cd-bf698c9a7efc"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "efd13578-9473-4960-a5ee-5a3a9e36c0a0",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "Compliment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2f32755c-9be6-4771-ba34-dfce022089b8",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "Feature Request",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        160
+      ],
+      "id": "b9c6c2cc-1842-4175-b6de-9d917d4057ed",
+      "name": "Feedback Category Router"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGXgcpAFpzPvhM9",
+          "mode": "list",
+          "cachedResultName": "Feedback Automation",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblK3sYZRnuTnlnBB",
+          "mode": "list",
+          "cachedResultName": "COMPLAINT",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9/tblK3sYZRnuTnlnBB"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "EMAIL": "={{ $('Feedback Category Router').item.json['EMAIL ADDRESS'] }}",
+            "FULL NAME": "={{ $('Feedback Category Router').item.json['FULL NAME'] }}",
+            "CONTACT NUMBER": "={{ $('Feedback Category Router').item.json['CONTACT NUMBER'] }}",
+            "FEEDBACK": "={{ $json.FEEDBACK }}",
+            "CATEGORY": "={{ $json.category }}",
+            "SENTIMENT": "={{ $json.sentiment }}",
+            "PRIORITY": "={{ $json.priority }}",
+            "TOPIC": "={{ $('Merge').item.json.topic }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CONTACT NUMBER",
+              "displayName": "CONTACT NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FEEDBACK",
+              "displayName": "FEEDBACK",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CATEGORY",
+              "displayName": "CATEGORY",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SENTIMENT",
+              "displayName": "SENTIMENT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "PRIORITY",
+              "displayName": "PRIORITY",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "TOPIC",
+              "displayName": "TOPIC",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SUBMITTED AT",
+              "displayName": "SUBMITTED AT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -16
+      ],
+      "id": "d196ca9f-e1b9-4066-a141-0b1c6a5ebe1d",
+      "name": "Store Complaint Feedback",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "23wRCvm5TckXCg8p",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGXgcpAFpzPvhM9",
+          "mode": "list",
+          "cachedResultName": "Feedback Automation",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblbSocs1LTpWCsSG",
+          "mode": "list",
+          "cachedResultName": "Complain - Low Table",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9/tblbSocs1LTpWCsSG"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "EMAIL": "={{ $('Feedback Category Router').item.json['EMAIL ADDRESS'] }}",
+            "FULL NAME": "={{ $('Feedback Category Router').item.json['FULL NAME'] }}",
+            "CONTACT NUMBER": "={{ $('Feedback Category Router').item.json['CONTACT NUMBER'] }}",
+            "FEEDBACK": "={{ $('Merge').item.json.FEEDBACK }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CONTACT NUMBER",
+              "displayName": "CONTACT NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FEEDBACK",
+              "displayName": "FEEDBACK",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        -336
+      ],
+      "id": "d1f74446-2f28-414e-aea2-4c18090d7828",
+      "name": "Store Low-Priority Complaint",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "23wRCvm5TckXCg8p",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGXgcpAFpzPvhM9",
+          "mode": "list",
+          "cachedResultName": "Feedback Automation",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFzXxrASjlEWct4",
+          "mode": "list",
+          "cachedResultName": "Complain - Medium Table",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9/tblFzXxrASjlEWct4"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FULL NAME": "={{ $('Customer Feedback Submission Form').item.json['FULL NAME'] }}",
+            "EMAIL": "={{ $('Customer Feedback Submission Form').item.json['EMAIL ADDRESS'] }}",
+            "CONTACT NUMBER": "={{ $('Customer Feedback Submission Form').item.json['CONTACT NUMBER'] }}",
+            "FEEDBACK": "={{ $('Customer Feedback Submission Form').item.json.FEEDBACK }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CONTACT NUMBER",
+              "displayName": "CONTACT NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FEEDBACK",
+              "displayName": "FEEDBACK",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        -128
+      ],
+      "id": "04f0508e-08bd-4d3d-84e9-c87eaaf83ba1",
+      "name": "Store Medium-Priority Complaint",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "23wRCvm5TckXCg8p",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGXgcpAFpzPvhM9",
+          "mode": "list",
+          "cachedResultName": "Feedback Automation",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblgRfCxLtqiCY1VD",
+          "mode": "list",
+          "cachedResultName": "Complain - High Table",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9/tblgRfCxLtqiCY1VD"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FULL NAME": "={{ $json.fields['FULL NAME'] }}",
+            "EMAIL": "={{ $json.fields.EMAIL }}",
+            "CONTACT NUMBER": "={{ $json.fields['CONTACT NUMBER'] }}",
+            "FEEDBACK": "={{ $json.fields.FEEDBACK }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CONTACT NUMBER",
+              "displayName": "CONTACT NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FEEDBACK",
+              "displayName": "FEEDBACK",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        64
+      ],
+      "id": "651ab91e-b54b-4d6b-ac64-b4a86efdf7d0",
+      "name": "Store High-Priority Complaint",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "23wRCvm5TckXCg8p",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGXgcpAFpzPvhM9",
+          "mode": "list",
+          "cachedResultName": "Feedback Automation",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblIkdoZNIfT1avo4",
+          "mode": "list",
+          "cachedResultName": "Complain - Critical Table",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9/tblIkdoZNIfT1avo4"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FULL NAME": "={{ $json.fields['FULL NAME'] }}",
+            "EMAIL": "={{ $json.fields.EMAIL }}",
+            "CONTACT NUMBER": "={{ $json.fields['CONTACT NUMBER'] }}",
+            "FEEDBACK": "={{ $json.fields.FEEDBACK }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CONTACT NUMBER",
+              "displayName": "CONTACT NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FEEDBACK",
+              "displayName": "FEEDBACK",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        288
+      ],
+      "id": "24c9952a-6ce9-4104-8f6d-3ef3e2df1d2a",
+      "name": "Store Critical Complaint",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "23wRCvm5TckXCg8p",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appGXgcpAFpzPvhM9",
+          "mode": "list",
+          "cachedResultName": "Feedback Automation",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblMiIi4bGwxXXklo",
+          "mode": "list",
+          "cachedResultName": "COMPLIMENT",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9/tblMiIi4bGwxXXklo"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FULL NAME": "={{ $('Merge').item.json['FULL NAME'] }}",
+            "EMAIL": "={{ $('Merge').item.json['EMAIL ADDRESS'] }}",
+            "CONTACT NUMBER": "={{ $('Merge').item.json['CONTACT NUMBER'] }}",
+            "FEEDBACK": "={{ $('Merge').item.json.FEEDBACK }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CONTACT NUMBER",
+              "displayName": "CONTACT NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FEEDBACK",
+              "displayName": "FEEDBACK",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        176
+      ],
+      "id": "1bc254af-a331-44f9-ab28-ed16c4921da7",
+      "name": "Store Compliment Feedback",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "23wRCvm5TckXCg8p",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGXgcpAFpzPvhM9",
+          "mode": "list",
+          "cachedResultName": "Feedback Automation",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl7qZNRwvBKwaxDm",
+          "mode": "list",
+          "cachedResultName": "FEATURE ADDITION REQUEST",
+          "cachedResultUrl": "https://airtable.com/appGXgcpAFpzPvhM9/tbl7qZNRwvBKwaxDm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FULL NAME": "={{ $('Merge').item.json['FULL NAME'] }}",
+            "EMAIL": "={{ $('Merge').item.json['EMAIL ADDRESS'] }}",
+            "CONTACT NUMBER": "={{ $('Merge').item.json['CONTACT NUMBER'] }}",
+            "FEEDBACK": "={{ $('Merge').item.json.FEEDBACK }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CONTACT NUMBER",
+              "displayName": "CONTACT NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FEEDBACK",
+              "displayName": "FEEDBACK",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        368
+      ],
+      "id": "ffaba4e0-83ab-4fe0-a300-dc5a41d7012f",
+      "name": "Store Feature Request",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "23wRCvm5TckXCg8p",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4e4fe3bf-c349-40c4-8a4c-a953c9164f61",
+                    "leftValue": "={{ $json.fields.PRIORITY }}",
+                    "rightValue": "Low",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c6086a06-186f-45da-9a69-4359f436132a",
+                    "leftValue": "={{ $json.fields.PRIORITY }}",
+                    "rightValue": "Medium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "097847fb-2fcd-4536-a94c-ddcee29f81f5",
+                    "leftValue": "={{ $json.fields.PRIORITY }}",
+                    "rightValue": "High",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "58268370-185f-47f4-b210-1318dafc482d",
+                    "leftValue": "={{ $json.fields.PRIORITY }}",
+                    "rightValue": "Critical",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -128
+      ],
+      "id": "a3907631-900a-4a3b-bcfe-76e01e5510fd",
+      "name": "Complaint Priority Router"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BTBS3AMV5",
+          "mode": "list",
+          "cachedResultName": "complaint"
+        },
+        "text": "=*Customer Feedback Alert*\n\nA new customer feedback item requires team review.\n\n*Customer:* {{ $('Feedback Category Router').item.json['FULL NAME'] }}\n*Category:* {{ $('Complaint Priority Router').item.json.fields.CATEGORY }}\n*Sentiment:* {{ $('Complaint Priority Router').item.json.fields.SENTIMENT }}\n*Priority:* {{ $('Complaint Priority Router').item.json.fields.PRIORITY }}\n*Topic:* {{ $('Complaint Priority Router').item.json.fields.TOPIC }}\n*Customer Feedback:* {{ $('Feedback Category Router').item.json.FEEDBACK }}\n*Summary:* {{ $('Feedback Category Router').item.json.summary }}\n*Recommended Action:* {{ $('Parse & Validate AI Output').item.json.action }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1344,
+        -128
+      ],
+      "id": "1d1a1907-594e-476a-9a67-f67f71f15514",
+      "name": "Notify Product Team: Complaint Request",
+      "webhookId": "75a077f3-ece4-4dd1-bbd0-660d685f1e48",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "PLG655T7maze01HY",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BSHQQEU1L",
+          "mode": "list",
+          "cachedResultName": "feature-additon-request"
+        },
+        "text": "=*New Feature Request*\n\nA customer has submitted a feature request for review by the product and development team.\n\n*Customer:* {{ $('Customer Feedback Submission Form').item.json['FULL NAME'] }}\n*Category:* {{ $('Merge').item.json.category }}\n*Sentiment:* {{ $('Merge').item.json.sentiment }}\n*Priority:* {{ $('Merge').item.json.priority }}\n*Topic:* {{ $('Merge').item.json.topic }}\n*Customer Request:* {{ $('Customer Feedback Submission Form').item.json.FEEDBACK }}\n*Summary:* {{ $('Merge').item.json.summary }}\n*Recommended Action:* {{ $('Merge').item.json.action }}\n\nPlease review the request and consider it for the appropriate product planning or development process.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        624,
+        368
+      ],
+      "id": "83d3a622-4796-4308-b8c9-f81c8a50f2e1",
+      "name": "Notify Product Team: Feature Request",
+      "webhookId": "75a077f3-ece4-4dd1-bbd0-660d685f1e48",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "PLG655T7maze01HY",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional Customer Support Communication Specialist responsible for writing high-quality customer emails.\n\nYour task is to generate a clear, professional, empathetic, and reassuring email response based on the customer's feedback and the available analysis.\n\nCUSTOMER INFORMATION:\n\nCustomer Name:\n{{ $('Store Critical Complaint').item.json.fields['FULL NAME'] }}\n\nCustomer Feedback:\n{{ $('Store Critical Complaint').item.json.fields.FEEDBACK }}\n\nFeedback Category:\n{{ $('Complaint Priority Router').item.json.fields.CATEGORY }}\n\nCustomer Sentiment:\n{{ $('Complaint Priority Router').item.json.fields.SENTIMENT }}\n\nPriority Level:\n{{ $('Complaint Priority Router').item.json.fields.PRIORITY }}\n\nTopic:\n{{ $('Complaint Priority Router').item.json.fields.TOPIC }}\n\nAI Summary:\n{{ $('Merge').item.json.summary }}\n\nRESPONSE GUIDELINES:\n\n1. PERSONALIZATION\n- Address the customer politely using their first name when available.\n- Acknowledge the specific issue, request, or feedback they provided.\n- Make the response feel personalized rather than automated.\n\n2. PROFESSIONALISM\n- Maintain a professional, respectful, and customer-focused tone.\n- Use clear and natural business English.\n- Keep the message concise but meaningful.\n- Do not use overly casual language.\n\n3. EMPATHY AND ASSURANCE\n- If the customer reports a problem, acknowledge their inconvenience or frustration.\n- Show genuine understanding without exaggerating.\n- Clearly assure the customer that their feedback has been received and will be reviewed by the appropriate team.\n\n4. CLARITY\n- Clearly explain what will happen next when appropriate.\n- Do not use vague statements such as \"we will look into it\" without context.\n- Use wording such as:\n  \"Your concern has been documented and shared with the appropriate team for review.\"\n\n5. DO NOT MAKE FALSE PROMISES\n- Do not promise an exact resolution time.\n- Do not guarantee that an issue will definitely be fixed.\n- Do not claim that a refund, feature, or solution has been approved unless explicitly stated in the provided information.\n- Do not invent technical details.\n\n6. CATEGORY-SPECIFIC BEHAVIOR\n\nFor COMPLAINTS:\n- Apologize appropriately for the inconvenience.\n- Acknowledge the specific problem.\n- Provide reassurance that the concern has been documented and shared with the appropriate team.\n- Maintain a calm and responsible tone.\n\nFor COMPLIMENTS:\n- Thank the customer sincerely.\n- Show appreciation for their positive feedback.\n- Keep the response warm and professional.\n\nFor FEATURE REQUESTS:\n- Thank the customer for sharing their suggestion.\n- Clearly acknowledge the requested feature or improvement.\n- State that the feedback will be shared with the relevant product or development team for consideration.\n- Do not promise that the feature will be implemented.\n\n7. EMAIL FORMAT\n\nGenerate a complete email body using this structure:\n\nGreeting\n\nPersonalized acknowledgment of the customer's feedback.\n\nProfessional response based on the feedback category.\n\nClear reassurance or appreciation.\n\nClosing statement.\n\nProfessional sign-off.\n\n8. LENGTH\n- Keep the email between 80 and 150 words.\n- Avoid unnecessary repetition.\n- Make every sentence useful.\n\nIMPORTANT RESTRICTIONS:\n\n- Do not mention AI.\n- Do not mention confidence scores.\n- Do not mention internal workflow logic.\n- Do not mention priority levels unless necessary for the customer's understanding.\n- Do not include analysis or explanations.\n- Do not use markdown.\n- Do not include a subject line.\n- Return ONLY the final email body.\nSTRICT FACTUAL AND OPERATIONAL RULES:\n\n- Do not ask the customer to provide additional documents, screenshots, receipts, payment details, passwords, or personal information unless explicitly instructed in the provided context.\n\n- Do not invent company policies, procedures, investigation steps, refund processes, eligibility requirements, or support workflows.\n\n- Do not say that a specific team has already received the issue unless that information is explicitly provided.\n\n- Do not promise a resolution, refund, replacement, implementation, or specific outcome.\n\n- Do not say \"we will follow up\" unless follow-up is explicitly part of the workflow.\n\n- Only acknowledge the customer's feedback and provide assurance that it has been received and will be reviewed appropriately.\n\n- When information about the next steps is unavailable, use safe language such as:\n  \"Your concern has been recorded and will be reviewed by the appropriate team.\"\n\n- Never request sensitive information such as passwords, full card numbers, bank details, or government identification.\n\n- Do not invent technical explanations or causes of the problem.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1296,
+        288
+      ],
+      "id": "3126db8b-067c-4293-81d9-86f6fdd90d59",
+      "name": "AI Customer Response Generator"
+    },
+    {
+      "parameters": {
+        "jsCode": "let subject;\n\nconst category = $('Feedback Category Router').first().json.category;\nconst topic = $('Feedback Category Router').first().json.topic;\nconst priority = $('Feedback Category Router').first().json.priority;\n\nif (category === \"Complaint\") {\n  \n  if (priority === \"Critical\") {\n    subject = `Important: We've Received Your ${topic} Concern`;\n  } else {\n    subject = `We've Received Your ${topic} Concern`;\n  }\n\n} else if (category === \"Feature Request\") {\n  \n  subject = `Thank You for Your ${topic} Suggestion`;\n\n} else if (category === \"Compliment\") {\n  \n  subject = `Thank You for Your Feedback`;\n  \n} else {\n  \n  subject = `Thank You for Your Feedback`;\n}\n\nreturn [\n  {\n    json: {\n      ...$json,\n      email_subject: subject\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        288
+      ],
+      "id": "525df3bb-6e37-4949-83a5-5b42a0503fbc",
+      "name": "Generate Email Subject Line"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Store Critical Complaint').item.json.fields.EMAIL }}",
+        "subject": "={{ $json.email_subject }}",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        288
+      ],
+      "id": "ca390b60-bcaa-4236-91e8-91fdafc1d985",
+      "name": "Send Customer Response Email",
+      "webhookId": "07600d5b-c997-4f2f-86c5-78a7dd86320b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CasFliGYdaKkvbD3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "groq/compound-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        592
+      ],
+      "id": "61807070-962e-4a46-a271-d25fe922feea",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "QEvgDdvhvuiog5w0",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "groq/compound-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        496
+      ],
+      "id": "d259dbbd-f84e-49b8-bb0a-6577244cfa68",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "QEvgDdvhvuiog5w0",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Feedback Category Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Feedback Submission Form": {
+      "main": [
+        [
+          {
+            "node": "AI Feedback Intelligence Engine",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Feedback Intelligence Engine": {
+      "main": [
+        [
+          {
+            "node": "Parse & Validate AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Validate AI Output": {
+      "main": [
+        [
+          {
+            "node": "Confidence Threshold Check (≥ 0.85)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confidence Threshold Check (≥ 0.85)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Low-Confidence Review Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback Category Router": {
+      "main": [
+        [
+          {
+            "node": "Store Complaint Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Compliment Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Feature Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        []
+      ]
+    },
+    "Store Complaint Feedback": {
+      "main": [
+        [
+          {
+            "node": "Complaint Priority Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Low-Priority Complaint": {
+      "main": [
+        [
+          {
+            "node": "Notify Product Team: Complaint Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Medium-Priority Complaint": {
+      "main": [
+        [
+          {
+            "node": "Notify Product Team: Complaint Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store High-Priority Complaint": {
+      "main": [
+        [
+          {
+            "node": "Notify Product Team: Complaint Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Critical Complaint": {
+      "main": [
+        [
+          {
+            "node": "AI Customer Response Generator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Product Team: Complaint Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Feature Request": {
+      "main": [
+        [
+          {
+            "node": "Notify Product Team: Feature Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complaint Priority Router": {
+      "main": [
+        [
+          {
+            "node": "Store Low-Priority Complaint",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Medium-Priority Complaint",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store High-Priority Complaint",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Critical Complaint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Product Team: Complaint Request": {
+      "main": [
+        []
+      ]
+    },
+    "AI Customer Response Generator": {
+      "main": [
+        [
+          {
+            "node": "Generate Email Subject Line",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Email Subject Line": {
+      "main": [
+        [
+          {
+            "node": "Send Customer Response Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Feedback Intelligence Engine",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Customer Response Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "93f2e99a-4f49-4c17-b101-93b79a4c0470",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8dd84d2a0188e8ad378eedaeb71f8e07e337995e04e3701246816cac56607915"
+  },
+  "nodeGroups": [],
+  "id": "0C1wg29qwHOxN0j0",
+  "tags": []
+}
